@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from models import Bus
+from station.models import Bus
 
 
 class BusSerializers(serializers.Serializer):
