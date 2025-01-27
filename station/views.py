@@ -1,53 +1,42 @@
-from rest_framework.decorators import api_view
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.views import APIView
+from rest_framework import generics, mixins
 
 from station.models import Bus
 from station.serializers import BusSerializers
 
 
-class BusListView(APIView):
-    def get(self, request) -> Response:
-        buses = Bus.objects.all()
-        serializer = BusSerializers(buses, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class BusListView(
+    generics.GenericAPIView,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin
+):
+    queryset = Bus.objects.all()
+    serializer_class = BusSerializers
 
-    def post(self, request) -> Response:
-        serializer = BusSerializers(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, *args, **kwargs) -> Response:
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs) -> Response:
+        return self.create(request, *args, **kwargs)
 
 
-class BusDetailView(APIView):
-    def get_object(self, pk) -> Bus:
-        return get_object_or_404(Bus, pk=pk)
+class BusDetailView(
+    generics.GenericAPIView,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin
+):
+    queryset = Bus.objects.all()
+    serializer_class = BusSerializers
 
-    def get(self, request, pk) -> Response:
-        serializer = BusSerializers(self.get_object(pk=pk))
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, *args, **kwargs) -> Response:
+        return self.retrieve(request, *args, **kwargs)
 
-    def put(self, request, pk) -> Response:
-        serializer = BusSerializers(self.get_object(pk=pk), data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    def put(self, request, *args, **kwargs) -> Response:
+        return self.update(request, *args, **kwargs)
 
-    def patch(self, request, pk) -> Response:
-        serializer = BusSerializers(
-            self.get_object(pk=pk),
-            data=request.data,
-            partial=True
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    def patch(self, request, *args, **kwargs) -> Response:
+        return self.partial_update(request, *args, **kwargs)
 
-    def delete(self, request, pk) -> Response:
-        self.get_object(pk=pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, *args, **kwargs) -> Response:
+        return self.destroy(request, *args, **kwargs)
