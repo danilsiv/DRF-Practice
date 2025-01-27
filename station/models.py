@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.db.models import UniqueConstraint
 
@@ -73,3 +74,18 @@ class Ticket(models.Model):
     ):
         self.full_clean()
         return super(Ticket, self).save(force_insert, force_update, using, update_fields)
+
+
+class Order(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="orders"
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return str(self.created_at)
