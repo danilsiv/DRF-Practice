@@ -6,4 +6,4 @@ class BusSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Bus
-        fields = ("id", "info", "num_seats")
+        fields = ("id", "info", "num_seats", "is_small")
