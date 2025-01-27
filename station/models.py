@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import UniqueConstraint
 
 
 class Bus(models.Model):
@@ -41,3 +42,34 @@ class Trip(models.Model):
 
     def __str__(self) -> str:
         return f"{self.source} - {self.destination} ({self.departure})"
+
+
+class Ticket(models.Model):
+    seat = models.IntegerField()
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name="tickets")
+    order = models.ForeignKey("Order", on_delete=models.CASCADE, related_name="tickets")
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=["seat", "trip"], name="unique_ticket_seat_trip")
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.trip} (seat - {self.seat})"
+
+    def clean(self) -> None:
+        if not (1 <= self.seat <= self.trip.bus.num_seats):
+            raise ValueError({
+                "seat": f"seat must be in range [1, {self.trip.bus.num_seats}], not {self.seat}"
+            })
+
+    def save(
+        self,
+        *args,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.full_clean()
+        return super(Ticket, self).save(force_insert, force_update, using, update_fields)
