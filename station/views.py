@@ -1,13 +1,19 @@
 from django.db.models import QuerySet
 from rest_framework import viewsets
 
-from station.models import Bus, Trip
+from station.models import Bus, Trip, Facility
 from station.serializers import (
     BusSerializer,
     TripSerializer,
     TripListSerializer,
-    BusListSerializer
+    BusListSerializer,
+    FacilitySerializer,
 )
+
+
+class FacilityViewSet(viewsets.ModelViewSet):
+    queryset = Facility.objects.all()
+    serializer_class = FacilitySerializer
 
 
 class BusViewSet(viewsets.ModelViewSet):
