@@ -1,4 +1,7 @@
+from django.db import transaction
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
+
 from station.models import Bus, Trip, Facility, Ticket, Order
 
 
@@ -53,10 +56,25 @@ class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = ("id", "seat", "trip")
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Ticket.objects.all(),
+                fields=["seat", "trip"]
+            )
+        ]
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
 
     class Meta:
         model = Order
-        fields = ("id", "created_at", "user", "tickets")
+        fields = ("id", "created_at", "tickets")
+
+    def create(self, validated_data) -> Order:
+        with transaction.atomic():
+            tickets_data = validated_data.pop("tickets", None)
+            order = Order.objects.create(**validated_data)
+            for ticket in tickets_data:
+                Ticket.objects.create(order=order, **ticket)
+            return order
