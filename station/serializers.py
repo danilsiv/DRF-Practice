@@ -65,7 +65,7 @@ class TicketSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs) -> None:
-        Ticket.validate_seat(attrs["seat"], attrs["ticket"].bus.num_seats, ValidationError)
+        Ticket.validate_seat(attrs["seat"], attrs["trip"].bus.num_seats, ValidationError)
 
 
 class OrderSerializer(serializers.ModelSerializer):
