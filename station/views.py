@@ -1,12 +1,32 @@
+from django.db.models import QuerySet
 from rest_framework import viewsets
 
 from station.models import Bus, Trip
-from station.serializers import BusSerializers, TripSerializer, TripListSerializer
+from station.serializers import (
+    BusSerializer,
+    TripSerializer,
+    TripListSerializer,
+    BusListSerializer
+)
 
 
 class BusViewSet(viewsets.ModelViewSet):
     queryset = Bus.objects.all()
-    serializer_class = BusSerializers
+    serializer_class = BusSerializer
+
+    def get_serializer_class(self) -> object:
+        serializer = self.serializer_class
+        if self.action == "list":
+            serializer = BusListSerializer
+
+        return serializer
+
+    def get_queryset(self) -> QuerySet:
+        queryset = self.queryset
+        if self.action == "list":
+            queryset = queryset.prefetch_related("facilities")
+
+        return queryset
 
 
 class TripViewSet(viewsets.ModelViewSet):
@@ -20,9 +40,9 @@ class TripViewSet(viewsets.ModelViewSet):
 
         return serializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = self.queryset
         if self.action == "list":
-            queryset = queryset.select_related()
+            queryset = queryset.prefetch_related("bus__facilities")
 
         return queryset
