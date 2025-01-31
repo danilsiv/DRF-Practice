@@ -1,7 +1,7 @@
 from django.db.models import QuerySet
 from rest_framework import viewsets
 
-from station.models import Bus, Trip, Facility
+from station.models import Bus, Trip, Facility, Order
 from station.serializers import (
     BusSerializer,
     TripSerializer,
@@ -10,6 +10,7 @@ from station.serializers import (
     FacilitySerializer,
     BusRetrieveSerializer,
     TripRetrieveSerializer,
+    OrderSerializer,
 )
 
 
@@ -58,3 +59,8 @@ class TripViewSet(viewsets.ModelViewSet):
             queryset = queryset.select_related()
 
         return queryset
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
