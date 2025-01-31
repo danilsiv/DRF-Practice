@@ -54,6 +54,7 @@ class Ticket(models.Model):
         constraints = [
             UniqueConstraint(fields=["seat", "trip"], name="unique_ticket_seat_trip")
         ]
+        ordering = ("seat",)
 
     def __str__(self) -> str:
         return f"{self.trip} (seat - {self.seat})"
