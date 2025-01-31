@@ -1,5 +1,6 @@
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
 from station.models import Bus, Trip, Facility, Ticket, Order
@@ -62,6 +63,9 @@ class TicketSerializer(serializers.ModelSerializer):
                 fields=["seat", "trip"]
             )
         ]
+
+    def validate(self, attrs) -> None:
+        Ticket.validate_seat(attrs["seat"], attrs["ticket"].bus.num_seats, ValidationError)
 
 
 class OrderSerializer(serializers.ModelSerializer):
