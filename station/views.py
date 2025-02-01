@@ -1,5 +1,6 @@
 from django.db.models import QuerySet, Count, F
 from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination
 
 from station.models import Bus, Trip, Facility, Order
 from station.serializers import (
@@ -80,9 +81,16 @@ class TripViewSet(viewsets.ModelViewSet):
         return queryset.order_by("id")
 
 
+class OrderSetPagination(PageNumberPagination):
+    page_size = 3
+    page_size_query_param = "page_size"
+    max_page_size = 20
+
+
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    pagination_class = OrderSetPagination
 
     def get_queryset(self) -> QuerySet:
         queryset = self.queryset.filter(user=self.request.user)
