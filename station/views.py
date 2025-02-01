@@ -1,8 +1,10 @@
 from django.db.models import QuerySet, Count, F
 from rest_framework import viewsets
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
 
 from station.models import Bus, Trip, Facility, Order
+from station.permissions import IsAdminOrIsAuthenticatedReadOnly
 from station.serializers import (
     BusSerializer,
     TripSerializer,
@@ -19,11 +21,14 @@ from station.serializers import (
 class FacilityViewSet(viewsets.ModelViewSet):
     queryset = Facility.objects.all()
     serializer_class = FacilitySerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAdminOrIsAuthenticatedReadOnly,)
 
 
 class BusViewSet(viewsets.ModelViewSet):
     queryset = Bus.objects.all()
     serializer_class = BusSerializer
+    permission_classes = (IsAdminOrIsAuthenticatedReadOnly,)
 
     @staticmethod
     def _params_to_int(query_string: str) -> list[int]:
@@ -56,6 +61,7 @@ class BusViewSet(viewsets.ModelViewSet):
 class TripViewSet(viewsets.ModelViewSet):
     queryset = Trip.objects.all()
     serializer_class = TripSerializer
+    permission_classes = (IsAdminOrIsAuthenticatedReadOnly,)
 
     def get_serializer_class(self) -> object:
         serializer = self.serializer_class
@@ -91,6 +97,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     pagination_class = OrderSetPagination
+    permission_classes = (IsAdminOrIsAuthenticatedReadOnly,)
 
     def get_queryset(self) -> QuerySet:
         queryset = self.queryset.filter(user=self.request.user)
