@@ -1,6 +1,9 @@
 from django.db.models import QuerySet, Count, F
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
 
 from station.models import Bus, Trip, Facility, Order
 from station.serializers import (
@@ -13,6 +16,7 @@ from station.serializers import (
     TripRetrieveSerializer,
     OrderSerializer,
     OrderListSerializer,
+    BusImageSerializer,
 )
 
 
@@ -36,6 +40,8 @@ class BusViewSet(viewsets.ModelViewSet):
             serializer = BusListSerializer
         elif self.action == "retrieve":
             serializer = BusRetrieveSerializer
+        elif self.action == "upload_image":
+            serializer = BusImageSerializer
 
         return serializer
 
@@ -51,6 +57,20 @@ class BusViewSet(viewsets.ModelViewSet):
             queryset = queryset.prefetch_related("facilities")
 
         return queryset.distinct()
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        permission_classes=[IsAdminUser],
+        url_path="upload-image"
+    )
+    def upload_image(self, request, pk=None):
+        bus = self.get_object()
+        serializer = self.get_serializer(bus, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TripViewSet(viewsets.ModelViewSet):

@@ -28,6 +28,13 @@ class BusListSerializer(BusSerializer):
     )
 
 
+class BusImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Bus
+        fields = ("id", "image")
+
+
 class BusRetrieveSerializer(BusSerializer):
     facilities = FacilitySerializer(many=True)
 
