@@ -120,6 +120,22 @@ class AdminBusTests(TestCase):
         bus = Bus.objects.get(id=response.data["id"])
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
         for key in payload:
             self.assertEqual(payload[key], getattr(bus, key))
+
+    def test_create_bus_with_facilities(self) -> None:
+        facility_1 = Facility.objects.create(name="test_1")
+        facility_2 = Facility.objects.create(name="test_2")
+        payload = {
+            "num_info": "BB 1111 BB",
+            "num_seats": 30,
+            "facilities": [facility_1.id, facility_2.id]
+        }
+        response = self.client.post(BUS_URL, payload)
+        bus = Bus.objects.get(id=response.data["id"])
+        facilities = bus.facilities.all()
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn(facility_1, facilities)
+        self.assertIn(facility_2, facilities)
+        self.assertEqual(facilities.count(), 2)
