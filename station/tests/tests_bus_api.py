@@ -99,3 +99,27 @@ class AuthenticatedBusApiTests(TestCase):
         response = self.client.post(BUS_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminBusTests(TestCase):
+    def setUp(self) -> None:
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="test@admin.com",
+            password="test123admin",
+            is_staff=True,
+        )
+        self.client.force_authenticate(self.user)
+
+    def test_create_bus(self) -> None:
+        payload = {
+            "info": "AA 0000 AA",
+            "num_seats": 10
+        }
+        response = self.client.post(BUS_URL, payload)
+        bus = Bus.objects.get(id=response.data["id"])
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        for key in payload:
+            self.assertEqual(payload[key], getattr(bus, key))
